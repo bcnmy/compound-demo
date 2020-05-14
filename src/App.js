@@ -34,6 +34,9 @@ function App() {
       alert("Metamask is required to use this DApp")
       return;
     }
+    if(window.ethereum.networkVersion != 42){
+      alert("Switch to Kovan Network")
+    }
     biconomy = new Biconomy(window.ethereum, { apiKey: "GwiBC__tc.8c503ac0-dc5f-4e57-a738-fb44ca54847c" });
     web3 = new Web3(biconomy);
     biconomy.onEvent(biconomy.READY, async () => {
