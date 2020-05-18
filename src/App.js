@@ -34,7 +34,8 @@ function App() {
       alert("Metamask is required to use this DApp")
       return;
     }
-    if(window.ethereum.networkVersion != 42){
+    console.log(window.ethereum.networkVersion)
+    if (window.ethereum.networkVersion != 42) {
       alert("Switch to Kovan Network")
     }
     biconomy = new Biconomy(window.ethereum, { apiKey: "GwiBC__tc.8c503ac0-dc5f-4e57-a738-fb44ca54847c" });
@@ -43,7 +44,9 @@ function App() {
       // Initialize your dapp here like getting user accounts etc
       await window.ethereum.enable();
       contract = new web3.eth.Contract(config.contract.abi, config.contract.address);
-      startApp();
+      setTimeout(() => {
+        startApp();
+      }, 1000)
     }).onEvent(biconomy.ERROR, (error, message) => {
       // Handle error while initializing mexa
       console.log(error)
@@ -82,9 +85,23 @@ function App() {
         const r = "0x" + signature.substring(0, 64);
         const s = "0x" + signature.substring(64, 128);
         const v = parseInt(signature.substring(128, 130), 16);
+
         (async function withdraw() {
-          const result = await contract.methods.withdraw(window.ethereum.selectedAddress, nonce, r, s, v).send({ from: window.ethereum.selectedAddress })
-          console.log(result)
+          console.log("USER ADDRESS:", window.ethereum.selectedAddress);
+          console.log("SIGNATURE:", signature);
+          const promiEvent = contract.methods.withdraw(window.ethereum.selectedAddress, nonce, r, s, v).send({ from: window.ethereum.selectedAddress })
+          promiEvent.on("transactionHash", (hash) => {
+            console.log("Meta transaction Sent!")
+            console.log("Transaction Hash is ", hash)
+          }).once("confirmation", (confirmationNumber, receipt) => {
+            if (receipt.status) {
+              console.log("Transaction Processed Successfully!")
+            } else {
+              console.log("Transaction Failed!")
+            }
+            console.log(receipt)
+          })
+
         })();
       }
     );
